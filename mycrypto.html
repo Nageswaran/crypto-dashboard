@@ -2,10 +2,17 @@
 <head>
 	<title>My Crypto price for past X days</title>
 </head>
+
 <script src="https://code.jquery.com/jquery-3.3.1.js"></script>
 <script src="https://cdn.datatables.net/1.10.18/js/jquery.dataTables.min.js"></script>
+<script src="https://www.gstatic.com/charts/loader.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.8.4/moment.min.js"></script>
+<script src="https://cdn.datatables.net/plug-ins/1.10.18/sorting/datetime-moment.js"></script>
+
 <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.10.18/css/jquery.dataTables.min.css" />
 <body>
+	<div id= "data_period" align = "right"> </div>
+	<br>
 	<table id="coinStats" class="display" style="width:100%">
 		<thead>
 			<tr>
@@ -19,6 +26,7 @@
 				<td>Max Price</td>
 				<td>Max Time</td>
 				<td>Max Diff %</td>
+				<td>Graph</td>
 			</tr>
 		</thead>
 		<tbody>
@@ -35,12 +43,27 @@
 				<td>Max Price</td>
 				<td>Max Time</td>
 				<td>Max Diff %</td>
+				<td>Graph</td>
 			</tr>
 		</tfoot>
 	</table>
 
+	<br>
+	<hr>
+	<div id = "about_this" align="right"> </div>
 
 <script type="text/javascript">
+
+const Month = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+
+function getDate(minEpoch) {
+	var date = new Date(minEpoch * 1000);
+
+	return (date.getDate() > 9 ? date.getDate() : '0'+date.getDate()) + "-" 
+			+ Month[date.getMonth()] + "-"
+		 // + (date.getMonth() > 9 ? date.getMonth() : '0'+date.getMonth()) + "-" 
+		 + (date.getFullYear() - 2000);
+}
 
 function wait(ms){
    var start = new Date().getTime();
@@ -90,6 +113,17 @@ function getUrlParameter(sParam, defaultValue) {
 	var limit = getUrlParameter("limit", 30);
 	var tsym  = getUrlParameter("tsym", 'BTC');
 
+	var data_period_msg = "<b> From : </b>" + getDate((new Date().setDate(new Date().getDate()-limit))/1000) 
+						+ "<b> To : </b>" + getDate(new Date()/1000);
+
+	$("#data_period").append(data_period_msg);
+
+	var msg = "This page displays data for past <b>" + limit + "</b> number of days. To change it for 90 days add <b>limit=90</b> in URL. <br>"
+			+"Current currency is <b>" + tsym + "</b>. To change it to EUR add <b>tsym=EUR </b> in URL. <br>"
+			+"Example of complete URL is <b>/mycrypto.html?tsym=EUR&limit=45 </b>";
+
+	$("#about_this").append(msg);
+
 var coins = [
 	'ETH', 'BCH', 'LTC', 'BCN', 'TRX', 'REQ', 'EOS', 'YOYOW', 'XVG', 'POE', 'DNT', 'TNT', 'ZIL', 'CND', 'DLT', 'TNB', 'IOST', 'CDT',
 	'FUN', 'FUEL', 'STORM', 'LEND', 'BAT', 'AST', 'VIB', 'ENJ', 'SNT', 'MANA', 'QLC', 'IOTA', 'XRP', 'MTL', 'NANO', 'WAVES', 'BNB'
@@ -111,6 +145,8 @@ function processCoin(curCoin){
 
   		var data = response.Data;
 
+  		var graphData = [['Time', 'Price']];
+
   		for(j =0 ; j < data.length; ++j){
   			var curData = data[j];
 
@@ -120,6 +156,8 @@ function processCoin(curCoin){
 	  			avgPrice += curPrice;
 	  			++nonZero;
   			}
+
+  			graphData.push([curData.time, curPrice]);
 
   			var curMinPrice = toFixed(curData.low);
 
@@ -149,18 +187,36 @@ function processCoin(curCoin){
 				+"</td><td>"
 				+minPrice 
 				+"</td><td>"
-				+new Date(minTime * 1000).toDateString()
+				+getDate(minTime)
 				+"</td><td>"
 				+ ((curPrice - minPrice) / minPrice * 100).toFixed(0)
 				+"</td><td>"
 				+maxPrice
 				+"</td><td>"
-				+new Date(maxTime * 1000).toDateString()
+				+getDate(maxTime)
 				+"</td><td>"
 				+((maxPrice - curPrice) / curPrice * 100).toFixed(0)
+				+"</td><td>"
+				+"<div id='graph_" + curCoin + "'> </div>"
 				+"</td></tr>";
 
  			$('#coinStats > tbody').append(html);
+
+ 			google.charts.load('current', {'packages':['corechart']});
+ 			google.charts.setOnLoadCallback(function() {
+ 				var data = google.visualization.arrayToDataTable(graphData);
+
+		        var options = {
+		          curveType: 'function',
+		          legend: { position: 'bottom' },
+		          width : 150,
+		          height : 20
+		        };
+
+		        var chart = new google.visualization.LineChart(document.getElementById('graph_'+curCoin));
+
+		        chart.draw(data, options);
+ 			});
 	});
 }
 
@@ -176,6 +232,9 @@ for (i = 0; i < coins.length; ++i) {
 
 $.when(...ajaxResponses).done(
 		function() {
+
+		$.fn.dataTable.moment('D-MMM-YY');
+
 			$(document).ready(function() {
     			$('#coinStats').DataTable({
     				"pageLength": 50,
