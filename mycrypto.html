@@ -1,0 +1,201 @@
+<html>
+<head>
+	<title>My Crypto price for past X days</title>
+</head>
+<script src="https://code.jquery.com/jquery-3.3.1.js"></script>
+<script src="https://cdn.datatables.net/1.10.18/js/jquery.dataTables.min.js"></script>
+<link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.10.18/css/jquery.dataTables.min.css" />
+<body>
+	<table id="coinStats" class="display" style="width:100%">
+		<thead>
+			<tr>
+				<td>Coin</td>
+				<td>Cur Price</td>
+				<td>Avg Price</td>
+				<td>Cur - Avg %</td>
+				<td>Min Price</td>
+				<td>Min Time</td>
+				<td>Min Diff %</td>
+				<td>Max Price</td>
+				<td>Max Time</td>
+				<td>Max Diff %</td>
+			</tr>
+		</thead>
+		<tbody>
+		</tbody>
+		<tfoot>
+			<tr>
+				<td>Coin</td>
+				<td>Cur Price</td>
+				<td>Avg Price</td>
+				<td>Cur - Avg %</td>
+				<td>Min Price</td>
+				<td>Min Time</td>
+				<td>Min Diff %</td>
+				<td>Max Price</td>
+				<td>Max Time</td>
+				<td>Max Diff %</td>
+			</tr>
+		</tfoot>
+	</table>
+
+
+<script type="text/javascript">
+
+function wait(ms){
+   var start = new Date().getTime();
+   var end = start;
+   while(end < start + ms) {
+     end = new Date().getTime();
+  }
+}
+
+function toFixed(x) {
+  if (Math.abs(x) < 1.0) {
+    var e = parseInt(x.toString().split('e-')[1]);
+    if (e) {
+        x *= Math.pow(10,e-1);
+        x = '0.' + (new Array(e)).join('0') + x.toString().substring(2);
+    }
+  } else {
+    var e = parseInt(x.toString().split('+')[1]);
+    if (e > 20) {
+        e -= 20;
+        x /= Math.pow(10,e);
+        x += (new Array(e+1)).join('0');
+    }
+  }
+  return x;
+}
+
+function getUrlParameter(sParam, defaultValue) {
+    var sPageURL = decodeURIComponent(window.location.search.substring(1)),
+        sURLVariables = sPageURL.split('&'),
+        sParameterName,
+        i;
+
+    for (i = 0; i < sURLVariables.length; i++) {
+        sParameterName = sURLVariables[i].split('=');
+
+        if (sParameterName[0] === sParam) {
+            return sParameterName[1] == undefined ? defaultValue : sParameterName[1];
+        }
+    }
+
+    return defaultValue;
+};
+	// https://min-api.cryptocompare.com/data/histoday?fsym=REQ&tsym=BTC&limit=30
+	var domain = "https://min-api.cryptocompare.com/data/histoday";
+
+	var limit = getUrlParameter("limit", 30);
+	var tsym  = getUrlParameter("tsym", 'BTC');
+
+var coins = [
+	'ETH', 'BCH', 'LTC', 'BCN', 'TRX', 'REQ', 'EOS', 'YOYOW', 'XVG', 'POE', 'DNT', 'TNT', 'ZIL', 'CND', 'DLT', 'TNB', 'IOST', 'CDT',
+	'FUN', 'FUEL', 'STORM', 'LEND', 'BAT', 'AST', 'VIB', 'ENJ', 'SNT', 'MANA', 'QLC', 'IOTA', 'XRP', 'MTL', 'NANO', 'WAVES', 'BNB'
+];
+
+function processCoin(curCoin){
+    var curDomain = domain + "?fsym=" + curCoin+"&tsym="+tsym+"&limit="+limit;
+
+    return $.get( curDomain, function( response ) {
+    	
+  		var curPrice  = 0;
+  		var minPrice  = 10000000000;
+  		var minTime   = 0;
+  		var maxPrice  = 0.0;
+  		var maxTime   = 0;
+  		var avgPrice  = 0;
+
+  		var nonZero = 0;
+
+  		var data = response.Data;
+
+  		for(j =0 ; j < data.length; ++j){
+  			var curData = data[j];
+
+  			curPrice = toFixed(curData.close) * 1.0;
+
+  			if (curPrice != 0) {
+	  			avgPrice += curPrice;
+	  			++nonZero;
+  			}
+
+  			var curMinPrice = toFixed(curData.low);
+
+  			if (curMinPrice != 0 && minPrice > curMinPrice) {
+  				minPrice = curMinPrice;
+  				minTime  = curData.time;
+  			}
+
+  			if (maxPrice < toFixed(curData.high)) {
+  				maxPrice = toFixed(curData.high);
+  				maxTime = curData.time;
+  			}
+  		}
+
+  		var coinStat = [curCoin, curPrice, minPrice, minTime, maxPrice, maxTime];
+
+		var avg = ( avgPrice / nonZero ).toFixed(10);
+
+		var html = "<tr><td>" 
+				+ curCoin 
+				+"</td><td>"
+				+toFixed(curPrice)
+				+"</td><td>"
+				+ avg
+				+"</td><td>"
+				+ ((curPrice - avg) / avg *100).toFixed(0)
+				+"</td><td>"
+				+minPrice 
+				+"</td><td>"
+				+new Date(minTime * 1000).toDateString()
+				+"</td><td>"
+				+ ((curPrice - minPrice) / minPrice * 100).toFixed(0)
+				+"</td><td>"
+				+maxPrice
+				+"</td><td>"
+				+new Date(maxTime * 1000).toDateString()
+				+"</td><td>"
+				+((maxPrice - curPrice) / curPrice * 100).toFixed(0)
+				+"</td></tr>";
+
+ 			$('#coinStats > tbody').append(html);
+	});
+}
+
+var ajaxResponses = [];
+
+for (i = 0; i < coins.length; ++i) {
+	ajaxResponses.push(processCoin(coins[i]));
+
+	if ((i + 1) % 10 == 0) {
+		wait(1000);
+	}
+}
+
+$.when(...ajaxResponses).done(
+		function() {
+			$(document).ready(function() {
+    			$('#coinStats').DataTable({
+    				"pageLength": 50,
+    				"columnDefs": [
+    					{ "type": "num" , targets: 1, className: 'dt-body-right'},
+    					{ "type": "num" , targets: 2, className: 'dt-body-right'},
+    					{ "type": "num" , targets: 3, className: 'dt-body-right'},
+    					{ "type": "num" , targets: 4, className: 'dt-body-right'},
+    					{ "type": "num" , targets: 6, className: 'dt-body-right'},
+    					{ "type": "num" , targets: 7, className: 'dt-body-right'},
+    					{ "type": "num" , targets: 9, className: 'dt-body-right'}
+  					]
+    			});
+			} );
+		}
+	);
+
+
+
+</script>
+
+</body>
+</html>
