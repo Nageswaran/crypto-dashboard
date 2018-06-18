@@ -17,6 +17,7 @@
 		<thead>
 			<tr>
 				<td>Coin</td>
+				<td>Symbol</td>
 				<td>Cur Price</td>
 				<td>Avg Price</td>
 				<td>Cur - Avg %</td>
@@ -34,6 +35,7 @@
 		<tfoot>
 			<tr>
 				<td>Coin</td>
+				<td>Symbol</td>
 				<td>Cur Price</td>
 				<td>Avg Price</td>
 				<td>Cur - Avg %</td>
@@ -107,6 +109,8 @@ function getUrlParameter(sParam, defaultValue) {
 
     return defaultValue;
 };
+
+
 	// https://min-api.cryptocompare.com/data/histoday?fsym=REQ&tsym=BTC&limit=30
 	var domain = "https://min-api.cryptocompare.com/data/histoday";
 
@@ -210,7 +214,9 @@ function processCoin(curCoin){
 		var avg = ( avgPrice / nonZero ).toFixed(8);
 
 		var html = "<tr><td>" 
-				+ curCoin 
+				+ sym2name[curCoin]
+				+"</td><td>"
+				+curCoin
 				+"</td><td>"
 				+toFixed(curPrice)
 				+"</td><td>"
@@ -255,37 +261,44 @@ function processCoin(curCoin){
 
 var ajaxResponses = [];
 
-for (i = 0; i < coins.length; ++i) {
-	ajaxResponses.push(processCoin(coins[i]));
+var sym2name = {};
 
-	if ((i + 1) % 10 == 0) {
-		wait(1000);
+$.when($.get("https://s2.coinmarketcap.com/generated/search/quick_search.json", function(response) {
+	for(i =0; i< response.length; ++i){
+		var item = response[i];
+		sym2name[item.symbol] = item.name;
 	}
-}
+})).done(function(){
+		for (i = 0; i < coins.length; ++i) {
+			ajaxResponses.push(processCoin(coins[i]));
 
-$.when(...ajaxResponses).done(
-		function() {
-
-		$.fn.dataTable.moment('D-MMM-YY');
-
-			$(document).ready(function() {
-    			$('#coinStats').DataTable({
-    				"pageLength": 50,
-    				"columnDefs": [
-    					{ "type": "num" , targets: 1, className: 'dt-body-right'},
-    					{ "type": "num" , targets: 2, className: 'dt-body-right'},
-    					{ "type": "num" , targets: 3, className: 'dt-body-right'},
-    					{ "type": "num" , targets: 4, className: 'dt-body-right'},
-    					{ "type": "num" , targets: 6, className: 'dt-body-right'},
-    					{ "type": "num" , targets: 7, className: 'dt-body-right'},
-    					{ "type": "num" , targets: 9, className: 'dt-body-right'}
-  					]
-    			});
-			} );
+			if ((i + 1) % 10 == 0) {
+				wait(1000);
+			}
 		}
-	);
 
+		$.when(...ajaxResponses).done(
+				function() {
 
+				$.fn.dataTable.moment('D-MMM-YY');
+
+					$(document).ready(function() {
+		    			$('#coinStats').DataTable({
+		    				"pageLength": 50,
+		    				"columnDefs": [
+		    					{ "type": "num" , targets: 2, className: 'dt-body-right'},
+		    					{ "type": "num" , targets: 3, className: 'dt-body-right'},
+		    					{ "type": "num" , targets: 4, className: 'dt-body-right'},
+		    					{ "type": "num" , targets: 5, className: 'dt-body-right'},
+		    					{ "type": "num" , targets: 7, className: 'dt-body-right'},
+		    					{ "type": "num" , targets: 8, className: 'dt-body-right'},
+		    					{ "type": "num" , targets: 10, className: 'dt-body-right'}
+		  					]
+		    			});
+					} );
+				}
+			);
+});
 
 </script>
 
