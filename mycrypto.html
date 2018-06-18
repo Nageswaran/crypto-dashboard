@@ -124,10 +124,43 @@ function getUrlParameter(sParam, defaultValue) {
 
 	$("#about_this").append(msg);
 
+/*
 var coins = [
 	'ETH', 'BCH', 'LTC', 'BCN', 'TRX', 'REQ', 'EOS', 'YOYOW', 'XVG', 'POE', 'DNT', 'TNT', 'ZIL', 'CND', 'DLT', 'TNB', 'IOST', 'CDT',
 	'FUN', 'FUEL', 'STORM', 'LEND', 'BAT', 'AST', 'VIB', 'ENJ', 'SNT', 'MANA', 'QLC', 'IOTA', 'XRP', 'MTL', 'NANO', 'WAVES', 'BNB'
 ];
+*/
+
+/*
+	Run the below code in binance to get all coins name from binance, and change the coin YOYO to YOYOW
+
+	var url = "https://www.binance.com/api/v1/ticker/allPrices";
+
+var coins = [];
+
+var x = $.get(url, function (response) {
+	var currency = "BTC";
+	for (i =0; i < response.length; ++i) {
+
+		var coin = response[i].symbol;
+
+		if (coin.slice(-currency.length) == currency) {
+			coins.push(coin.substring(0, coin.length - currency.length));
+		}
+	}
+
+	console.log("[");
+	for(i =0; i < coins.length; ++i) {
+		console.log('"' + coins[i] +'",');
+	}
+	console.log("]");
+	
+});
+
+
+*/
+
+var coins = ["ETH","LTC","BNB","NEO","BCC","GAS","HSR","MCO","WTC","LRC","QTUM","YOYOW","OMG","ZRX","STRAT","SNGLS","BQX","KNC","FUN","SNM","IOTA","LINK","XVG","SALT","MDA","MTL","SUB","EOS","SNT","ETC","MTH","ENG","DNT","ZEC","BNT","AST","DASH","OAX","ICN","BTG","EVX","REQ","VIB","TRX","POWR","ARK","XRP","MOD","ENJ","STORJ","VEN","KMD","RCN","NULS","RDN","XMR","DLT","AMB","BAT","BCPT","ARN","GVT","CDT","GXS","POE","QSP","BTS","XZC","LSK","TNT","FUEL","MANA","BCD","DGD","ADX","ADA","PPT","CMT","XLM","CND","LEND","WABI","TNB","WAVES","GTO","ICX","OST","ELF","AION","NEBL","BRD","EDO","WINGS","NAV","LUN","TRIG","APPC","VIBE","RLC","INS","PIVX","IOST","CHAT","STEEM","NANO","VIA","BLZ","AE","RPX","NCASH","POA","ZIL","ONT","STORM","XEM","WAN","WPR","QLC","SYS","GRS","CLOAK","GNT","LOOM","BCN","REP","TUSD","ZEN","SKY","CVC","THETA","IOTX","QKC","AGI","NXS","DATA","SC"];
 
 function processCoin(curCoin){
     var curDomain = domain + "?fsym=" + curCoin+"&tsym="+tsym+"&limit="+limit;
