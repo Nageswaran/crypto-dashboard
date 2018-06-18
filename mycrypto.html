@@ -13,41 +13,11 @@
 <body>
 	<div id= "data_period" align = "right"> </div>
 	<br>
+	
 	<table id="coinStats" class="display" style="width:100%">
-		<thead>
-			<tr>
-				<td>Coin</td>
-				<td>Symbol</td>
-				<td>Cur Price</td>
-				<td>Avg Price</td>
-				<td>Cur - Avg %</td>
-				<td>Min Price</td>
-				<td>Min Time</td>
-				<td>Min Diff %</td>
-				<td>Max Price</td>
-				<td>Max Time</td>
-				<td>Max Diff %</td>
-				<td>Graph</td>
-			</tr>
-		</thead>
-		<tbody>
-		</tbody>
-		<tfoot>
-			<tr>
-				<td>Coin</td>
-				<td>Symbol</td>
-				<td>Cur Price</td>
-				<td>Avg Price</td>
-				<td>Cur - Avg %</td>
-				<td>Min Price</td>
-				<td>Min Time</td>
-				<td>Min Diff %</td>
-				<td>Max Price</td>
-				<td>Max Time</td>
-				<td>Max Diff %</td>
-				<td>Graph</td>
-			</tr>
-		</tfoot>
+		<thead> </thead>
+		<tbody> </tbody>
+		<tfoot> </tfoot>
 	</table>
 
 	<br>
@@ -63,8 +33,7 @@ function getDate(minEpoch) {
 
 	return (date.getDate() > 9 ? date.getDate() : '0'+date.getDate()) + "-" 
 			+ Month[date.getMonth()] + "-"
-		 // + (date.getMonth() > 9 ? date.getMonth() : '0'+date.getMonth()) + "-" 
-		 + (date.getFullYear() - 2000);
+		    + (date.getFullYear() - 2000);
 }
 
 function wait(ms){
@@ -110,6 +79,19 @@ function getUrlParameter(sParam, defaultValue) {
     return defaultValue;
 };
 
+
+function getHeader() {
+	var headers = [
+		'Coin', 'Symbol', 'CurPrice', 'AvgPrice', 'Cur-Avg %', 
+		'MinPrice', 'MinTime', 'MinDiff',
+		'MaxPrice', 'MaxTime', 'MaxDiff', 'Graph'];
+
+		return '<tr><td>' + headers.join('</td><td>') + '</td></tr>';
+
+}
+
+$("#coinStats thead").append(getHeader());
+$("#coinStats tfoot").append(getHeader());
 
 	// https://min-api.cryptocompare.com/data/histoday?fsym=REQ&tsym=BTC&limit=30
 	var domain = "https://min-api.cryptocompare.com/data/histoday";
