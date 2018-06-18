@@ -79,7 +79,6 @@ function getUrlParameter(sParam, defaultValue) {
     return defaultValue;
 };
 
-
 function getHeader() {
 	var headers = [
 		'Coin', 'Symbol', 'CurPrice', 'AvgPrice', 'Cur-Avg %', 
@@ -87,7 +86,6 @@ function getHeader() {
 		'MaxPrice', 'MaxTime', 'MaxDiff', 'Graph'];
 
 		return '<tr><td>' + headers.join('</td><td>') + '</td></tr>';
-
 }
 
 $("#coinStats thead").append(getHeader());
