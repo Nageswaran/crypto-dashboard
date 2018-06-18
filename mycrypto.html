@@ -240,7 +240,6 @@ function processCoin(curCoin){
 }
 
 var ajaxResponses = [];
-
 var sym2name = {};
 
 $.when($.get("https://s2.coinmarketcap.com/generated/search/quick_search.json", function(response) {
@@ -249,6 +248,7 @@ $.when($.get("https://s2.coinmarketcap.com/generated/search/quick_search.json", 
 		sym2name[item.symbol] = item.name;
 	}
 })).done(function(){
+
 		for (i = 0; i < coins.length; ++i) {
 			ajaxResponses.push(processCoin(coins[i]));
 
